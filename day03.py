@@ -141,6 +141,8 @@ chaos = [
     "old price: 40",
     "new price: 21",
     "old price: 29",
+    "old price:",
+    "completly wrong universe"
     "old price: 50",
     "new price: 101",
 ]
@@ -149,11 +151,19 @@ order = []
 # hier schreibst du deinen Code hinein
 for chaos_price in chaos:
 
-    price = int(chaos_price.split(": ")[1])
+    _, _, num = chaos_price.partition(": ")
+
+    if not num.isnumeric():
+        continue
+
+
+    price = int(num)
+    # price = int(chaos_price.split(": ")[1])
 
     if not "old" in chaos_price:
         order.append(price)
         continue
+
 
     # convert old price
     if price <= 20:
