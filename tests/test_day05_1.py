@@ -4,8 +4,7 @@
 
 import math
 import pytest
-from day05_1 import area_circle, user_number_input, user_number_multiplication
-
+from pythonplayground.day05_1 import area_circle, user_number_input, user_number_multiplication
 
 def test_area_circle():
     """Testet eine bekannte Fläche (Radius 1 => π)"""
