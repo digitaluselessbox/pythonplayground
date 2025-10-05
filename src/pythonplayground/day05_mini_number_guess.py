@@ -10,14 +10,18 @@
 # 3. highscore zurücksetzen
 
 
-from datetime import datetime
+import csv
 import sys
+import os
+import random
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List
+
+highscore_csv_path = "example_files/day05_mini_number_guess_highscore.csv"
 
 
-# print(scores)
-
-
-def user_number_input(question):
+def user_number_input(question) -> int:
     """Function asks user for a number input with a given question string."""
 
     number_input = ""
@@ -28,18 +32,114 @@ def user_number_input(question):
     return int(number_input)
 
 
-programm_choice = input(
-    "Was möchtest du machen? ("
-    + "1: Zahlenraten spielen,"
-    + "2: Highscore ansehen,"
-    + "3: kill Highscore):"
-)
+def print_score(highscore: list[dict]):
+    """this function print the complete highscore"""
+
+    print("\n-------------------------------------------")
+    print("|" + "Highscore".center(len("Highscore") + 32, " ") + "|")
+    print("-------------------------------------------")
+
+    for index, item in enumerate(iterable=highscore, start=0):
+        if index > 10:
+            break
+
+        print(
+            f"| {item['name'][:11]:.<11} | "
+            + f"{item['points']:>6} | "
+            + f"{
+                datetime
+                    .strptime(
+                        item['date'],
+                        '%Y-%m-%d %H:%M:%S'
+                    )
+                    .strftime('%d.%m.%Y %H:%M')
+                } |"
+        )
+
+    print("-------------------------------------------")
+    print(f"{'*Kissy Kissy': >43}")
 
 
-if programm_choice == "1":
-    # play game
+def sort_scores(score_data: list[dict]):
+    """sorting the score list for point descanding and dates ascending"""
+    score_data.sort(
+        key=lambda x: (
+            -int(x["points"]),
+            datetime.strptime(x["date"], "%Y-%m-%d %H:%M:%S").timestamp(),
+        )
+    )
 
-    import random
+    return score_data
+
+
+def load_scores(path: str) -> List[Dict[str, str]]:
+    """
+    Lädt Highscores aus einer CSV-Datei.
+
+    Args:
+        path: Pfad zur CSV-Datei
+
+    Returns:
+        Liste von Dicts mit Keys: "name", "points", "date"
+    """
+    result = []
+
+    file = Path(path)
+
+    if not file.exists():
+        return result  # leere Liste zurück, wenn Datei fehlt
+
+    with file.open(mode="r", newline="", encoding="utf-8") as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=";")
+        for row in reader:
+            # Score als int konvertieren
+            row["points"] = int(row["points"])
+            result.append(row)
+
+    result = sort_scores(score_data=result)
+
+    return result
+
+
+def save_scores(path: str, score_data: List[Dict[str, str]]) -> None:
+    """
+    Speichert Highscores in eine CSV-Datei.
+
+    Args:
+        path: Pfad zur CSV-Datei
+        scores: Liste von Dicts mit Keys: "name", "score", "date"
+    """
+    sort_scores(score_data=score_data)
+
+    file = Path(path)
+
+    # Spaltenüberschriften fix definieren
+    fieldnames = ["name", "points", "date"]
+
+    with file.open(mode="w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
+
+        # Kopfzeile schreiben
+        writer.writeheader()
+
+        # Alle Zeilen schreiben
+        for row in score_data:
+            writer.writerow(
+                {
+                    "name": row["name"],
+                    "points": int(row["points"]),  # sicherstellen, dass es int ist
+                    "date": row["date"],
+                }
+            )
+
+def play_game() -> dict:
+    """ this function represents the game play of number gussing """
+
+    secret_number = random.randrange(1, 20)
+
+    number_guessed = False
+    guessing_attempts = 0
+    highscore_name = ""  # Initialize to avoid unbound error
 
     print("Willkommen zu Zahlenraten. Viel Spaß!")
     print(
@@ -48,11 +148,6 @@ if programm_choice == "1":
         + "ich dir, ob du zu hoch oder zu niedrig bist. Dann kannst"
         + "du nochmal raten, bis du die Zahl hast."
     )
-
-    secret_number = random.randrange(1, 20)
-
-    number_guessed = False
-    guessing_attempts = 0
 
     while not number_guessed:
         guessing_attempts += 1
@@ -79,119 +174,62 @@ if programm_choice == "1":
 
             print(f"Danke {highscore_name}. Wir sehen uns...")
 
-            scores = [
-                {
-                    "name": highscore_name,
-                    "points": 10000 - (guessing_attempts * 1000),
-                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                }
-            ]
+            number_guessed = True  # Ensure loop exits after correct guess
 
-            with open(
-                "example_files/day05_mini_number_guess_highscore.csv",
-                "r",
-                encoding="utf-8",
-            ) as highscore_csv:
-
-                for index, row_highscore in enumerate(iterable=highscore_csv, start=0):
-                    # csv_data.write(f"{index:>2}: {row.strip().split(";")} \n")
-                    highscore = row_highscore.strip().split(";")
-                    scores.append(
-                        {
-                            "name": highscore[0].strip().strip('"'),
-                            "points": int(highscore[1]),
-                            "date": highscore[2].strip().strip('"'),
-                        }
-                    )
-
-                # scores.sort(key = compare_points)
-
-            scores.sort(
-                key=lambda x: (
-                    -int(x["points"]),
-                    datetime.strptime(x["date"], "%Y-%m-%d %H:%M:%S").timestamp(),
-                )
-            )
-
-            with open(
-                "example_files/day05_mini_number_guess_highscore.csv",
-                "w",
-                encoding="utf-8",
-            ) as highscore_csv:
-                for score in scores:
-                    highscore_csv.write(
-                        f"{score['name']};"
-                        + f"{score['points']};"
-                        + f"{datetime.strptime(score['date'], "%Y-%m-%d %H:%M:%S")}\n"
-                    )
-            sys.exit()
+            return {"name": highscore_name, "guessing_attempts": guessing_attempts}
 
         if user_guess > secret_number:
             print("Es tut mir Leid, Dein Tip war leider zu hoch.")
         elif user_guess < secret_number:
             print("Es tut mir Leid, Dein Tip war leider zu niedrig.")
+
+    # Fallback return to satisfy all code paths
+    return {"name": highscore_name, "guessing_attempts": guessing_attempts}
+
+
+programm_choice = input(
+    "Was möchtest du machen? ("
+    + "1: Zahlenraten spielen,"
+    + "2: Highscore ansehen,"
+    + "3: kill Highscore):"
+)
+
+
+if programm_choice == "1":
+    # play game
+
+    game_result = play_game()
+
+    # Update scores and save highscore
+    scores = load_scores(highscore_csv_path)
+
+    scores.append(
+        {
+            "name": game_result["name"],
+            "points": str(10000 - (game_result["guessing_attempts"] * 1000)),
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+
+    save_scores(path=highscore_csv_path, score_data=scores)
+
+    sys.exit()
+
 elif programm_choice == "2":
     # highscore ansehen
 
     scores = []
 
-    with open(
-        "example_files/day05_mini_number_guess_highscore.csv", "r", encoding="utf-8"
-    ) as highscore_csv:
+    scores = load_scores(highscore_csv_path)
 
-        for index, row_highscore in enumerate(iterable=highscore_csv, start=0):
-            # csv_data.write(f"{index:>2}: {row.strip().split(";")} \n")
-            highscore = row_highscore.strip().split(";")
-            scores.append(
-                {
-                    "name": highscore[0].strip().strip('"'),
-                    "points": int(highscore[1]),
-                    "date": highscore[2].strip().strip('"'),
-                }
-            )
+    print_score(highscore=scores)
 
-    # key=lambda x: (-int(x["points"]), datetime.strptime(x["date"], "%Y-%m-%d %H:%M:%S"))
-
-    scores.sort(
-        key=lambda x: (
-            -int(x["points"]),
-            datetime.strptime(x["date"], "%Y-%m-%d %H:%M:%S").timestamp(),
-        )
-    )
-
-    print("\n-------------------------------------------")
-    print("|" + "Highscore".center(len("Highscore") + 32, " ") + "|")
-    print("-------------------------------------------")
-
-    for index, score in enumerate(iterable=scores, start=0):
-        if index > 5:
-            break
-
-        print(
-            f"| {score['name'][:11]:.<11} | "
-            + f"{score['points']:>6} | "
-            # + f"{datetime.strptime(score['date'], "%Y-%m-%d %H:%M:%S")} |"
-            + f"{
-                datetime
-                    .strptime(
-                        score['date'],
-                        '%Y-%m-%d %H:%M:%S'
-                    )
-                    .strftime('%d.%m.%Y %H:%M')
-                } |"
-        )
-
-    print("-------------------------------------------")
-    print(f"{'*Kissy Kissy': >43}")
 elif programm_choice == "3":
     choice_validate_user_choice = user_number_input(
         "Wirklich löschen??? (42=ja, alles andere: nein)"
     )
     if choice_validate_user_choice == 42:
-        with open(
-            "example_files/day05_mini_number_guess_highscore.csv", "w", encoding="utf-8"
-        ) as highscore_csv:
-            highscore_csv.write("")
+        os.remove(highscore_csv_path)
 
         print("Yeah, alles auf Anfang. Jeder kann Erster sein! Wirst DU es sein?")
 
