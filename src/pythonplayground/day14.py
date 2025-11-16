@@ -1,23 +1,30 @@
+""" no module at all. Just testing a cube class. """
 class Cube():
+    """ a class represent a cube """
 
     def __init__(self, side_length):
         self.__side_length = side_length
 
-    def getSideLength(self):
+    def get_side_length(self) -> int:
+        """ return the side length of the cube """
         return self.__side_length
 
-    def volume(self):
-        return self.__side_length ** 3
+    def volume(self) -> int:
+        """ return the volume of the cude """
+        return self.get_side_length() ** 3
 
-    def surface(self):
-        return self.__side_length ** 2 * 6
+    def surface(self) -> int:
+        """ return the surface of the cude """
+        return self.get_side_length() ** 2 * 6
 
 
-# danach erzeugen wir eine Instanz deiner Cube-Klasse
-a = Cube(3)
+my_cube = Cube(3)
 
-print(a.getSideLength())
+# 3
+print(my_cube.get_side_length())
 
-print(a.volume())
+# 27
+print(my_cube.volume())
 
-print(a.surface())
+# 54
+print(my_cube.surface())
