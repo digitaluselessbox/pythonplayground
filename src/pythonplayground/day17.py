@@ -18,7 +18,7 @@ mars()
 
 # import version 3 - import all functions with wildcard
 # (no best practice, be specific!!!)
-from day17_hello import *
+from day17_hello import world, mars
 
 world()
 mars()
