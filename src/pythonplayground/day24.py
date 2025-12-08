@@ -1,6 +1,7 @@
 """ queue and priority queue """
 
 import queue
+import csv
 
 car_q = queue.Queue()
 
@@ -59,4 +60,5 @@ for char, priority in d.items():
     chars_queue.put((-priority, char)) # use minus to "switch" priority
 
 while not chars_queue.empty():
-    print(chars_queue.get())
+    index,char = chars_queue.get()
+    print(f"Anzah:{index*-1} / Buchstabe: {char}")

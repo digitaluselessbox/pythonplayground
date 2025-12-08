@@ -30,7 +30,7 @@ import csv
 names = set()
 
 with open("src/pythonplayground/example_files/names.csv", newline='', encoding="utf-8") as file_opened :
-    csv_file = csv.reader(file_opened, delimiter=",", )
+    csv_file = csv.reader(file_opened, delimiter=",")
     for row in csv_file:
         # print(row)
         names.add( row[1] )
