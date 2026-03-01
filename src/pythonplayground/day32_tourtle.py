@@ -1,4 +1,4 @@
-# Instructions:
+ # Instructions:
 
 # Using filled shapes, draw a simple house. Your house should have at least:
 
@@ -24,6 +24,17 @@ color("black", "white")  # Set pen color and fill color
 LINE_COLOR_DEFAULT = "black"
 
 
+# command pattern implementation for better readability and less code repetition
+# instead of calling begin_fill() and end_fill() in every shape drawing function,
+# we can use a helper function that takes care of the filling process.
+# This way, we can focus on the actual drawing commands for each shape,
+# making the code cleaner and more maintainable.
+def draw_filled_steps(steps):
+    begin_fill()
+    for action, args in steps:
+        action(*args)
+    end_fill()
+
 
 def set_colors(line_color=LINE_COLOR_DEFAULT, fill_color=None):
     color_args = [line_color]
@@ -41,42 +52,44 @@ def move_pen_tip(x:int, y:int):
 def draw_circle(radius, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     set_colors(line_color, fill_color)
 
-    begin_fill()
-    circle(radius)
-    end_fill()
+    draw_filled_steps([
+        (circle, (radius,)),
+    ])
 
 
-def draw_square(size, line_color = LINE_COLOR_DEFAULT, fill_color=None):
+def draw_square(size, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     set_colors(line_color, fill_color)
 
-
-    begin_fill()
-    for _ in range(4):
-        forward(size)
-        right(90)
-    end_fill()
+    # here we use a list as the args for the forward and right functions.
+    # It is much more readable than writing Touple style (size,) and (90,).
+    # compare with draw_triangle function below, where we use Touple style.
+    draw_filled_steps([
+        (forward, [size]),
+        (right, [90]),
+    ] * 4)
 
 
 def draw_triangle(size, degree, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     set_colors(line_color, fill_color)
 
-    begin_fill()
-    for _ in range(3):
-        forward(size)
-        right(degree)
-    end_fill()
+    # here we use Touple style for the args, which is also valid, but less readable.
+    # but you have the unchangeable semantic of a Tuple, which is not the case for a list.
+    # compare with draw_square function above.
+    draw_filled_steps([
+        (forward, (size,)),
+        (right, (degree,)),
+    ] * 3)
 
 
 def draw_rectangle(width, height, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     set_colors(line_color, fill_color)
 
-    begin_fill()
-    for _ in range(2):
-        forward(width)
-        right(90)
-        forward(height)
-        right(90)
-    end_fill()
+    draw_filled_steps([
+        (forward, (width,)),
+        (right, (90,)),
+        (forward, (height,)),
+        (right, (90,)),
+    ] * 2)
 
 
 # Draw the main building
