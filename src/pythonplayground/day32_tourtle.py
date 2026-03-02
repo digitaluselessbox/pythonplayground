@@ -13,47 +13,52 @@
 # Change colors between shapes to make your house more vibrant.
 # Use penup() and pendown() to move between different parts of your drawing without drawing lines.
 
-from turtle import *
-
-bgcolor("lightblue")  # Set the background color
-
-# Set up the turtle
-speed(5)  # Set the speed of the turtle
-color("black", "white")  # Set pen color and fill color
+from turtle import Screen, Turtle, done
 
 LINE_COLOR_DEFAULT = "black"
 
+screen = Screen()
+screen.setup(width=1024, height=768, startx=0, starty=0)
+screen.bgcolor("lightblue")  # Set the background color
+
+pen = Turtle()
+
+
+# Set up the turtle
+pen.speed(5)  # Set the speed of the turtle
+pen.color(LINE_COLOR_DEFAULT, "white")  # Set pen color and fill color
+
 
 # command pattern implementation for better readability and less code repetition
-# instead of calling begin_fill() and end_fill() in every shape drawing function,
+# instead of calling pen.begin_fill() and pen.end_fill() in every shape drawing function,
 # we can use a helper function that takes care of the filling process.
 # This way, we can focus on the actual drawing commands for each shape,
 # making the code cleaner and more maintainable.
 def draw_filled_steps(steps):
-    begin_fill()
+    pen.begin_fill()
     for action, args in steps:
         action(*args)
-    end_fill()
+    pen.end_fill()
 
 
 def set_colors(line_color=LINE_COLOR_DEFAULT, fill_color=None):
     color_args = [line_color]
     if fill_color:
         color_args.append(fill_color)
-    color(*color_args)
+    pen.color(*color_args)
 
 
 def move_pen_tip(x:int, y:int):
-    penup()
-    goto(x, y)
-    pendown()
+    pen.penup()
+    pen.goto(x, y)
+    pen.pendown()
 
 
 def draw_circle(radius, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     set_colors(line_color, fill_color)
 
     draw_filled_steps([
-        (circle, (radius,)),
+        (pen.circle, (radius,)),
     ])
 
 
@@ -64,8 +69,8 @@ def draw_square(size, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     # It is much more readable than writing Touple style (size,) and (90,).
     # compare with draw_triangle function below, where we use Touple style.
     draw_filled_steps([
-        (forward, [size]),
-        (right, [90]),
+        (pen.forward, [size]),
+        (pen.right, [90]),
     ] * 4)
 
 
@@ -76,8 +81,8 @@ def draw_triangle(size, degree, line_color=LINE_COLOR_DEFAULT, fill_color=None):
     # but you have the unchangeable semantic of a Tuple, which is not the case for a list.
     # compare with draw_square function above.
     draw_filled_steps([
-        (forward, (size,)),
-        (right, (degree,)),
+        (pen.forward, (size,)),
+        (pen.right, (degree,)),
     ] * 3)
 
 
@@ -85,10 +90,10 @@ def draw_rectangle(width, height, line_color=LINE_COLOR_DEFAULT, fill_color=None
     set_colors(line_color, fill_color)
 
     draw_filled_steps([
-        (forward, (width,)),
-        (right, (90,)),
-        (forward, (height,)),
-        (right, (90,)),
+        (pen.forward, (width,)),
+        (pen.right, (90,)),
+        (pen.forward, (height,)),
+        (pen.right, (90,)),
     ] * 2)
 
 
