@@ -1,3 +1,4 @@
-__all__ = ["Planet"]
+__all__ = ["Planet", "Galaxy"]
 
 from .Planet import Planet
+from .Galaxy import Galaxy
