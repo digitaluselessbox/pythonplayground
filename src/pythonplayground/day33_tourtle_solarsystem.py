@@ -6,27 +6,26 @@
 
 
 import json
-import sys
 import turtle
 import solar_system
 
 
 creator = turtle.Turtle()
+
 galaxy = solar_system.Galaxy(creator, width=1920, height=1080)
+galaxy.draw_background_stars(num_stars=200) # Draw the galaxy background with stars
+
 planets = []
+
 
 # check if the planets.json file exists in the expected location
 try:
     with open("solar_system/planets.json", "r", encoding="utf-8") as file:
         planets = json.load(file)["planets"]
 
-        galaxy.draw_background_stars(num_stars=200) # Draw the galaxy background with stars
-
         for planet_data in planets:
 
-            planet_position = galaxy.calculate_planet_coordinates(planet_data)
-
-            planet = solar_system.Planet(planet_data, planet_position, creator)
+            planet = solar_system.Planet(planet_data, creator, galaxy)
 
             planet.draw_orbit() # Draw the ecliptic plane of the planet
             planet.draw_planet() # Draw the planet

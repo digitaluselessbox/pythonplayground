@@ -1,11 +1,15 @@
 """ used by day33_tourtle_solarsystem.py to represent a planet in the solar system """
 
+from typing import TYPE_CHECKING
 import turtle
 import utils.colors as color_utils
 
+if TYPE_CHECKING:
+    from .Galaxy import Galaxy
+
 class Planet:
     """ A class representing a planet in the solar system. It contains methods to draw the planet, its label and its orbit on the screen using turtle graphics. """
-    def __init__(self, planet_data:dict, coordinates:tuple, pen_obj:turtle.Turtle):
+    def __init__(self, planet_data:dict, pen_obj:turtle.Turtle, galaxy: "Galaxy"):
         self.name = planet_data.get("name", "Unknown Planet")
         self.radius = planet_data.get("radius", 10)
         self.orbit_radius = planet_data.get("x", 0)
@@ -16,9 +20,9 @@ class Planet:
 
         self.show_orbit = planet_data.get("show_orbit", False)
         self.moons = planet_data.get("moons", 0)
-        self.pos_x = coordinates[0]
-        self.pos_y = coordinates[1]
         self.pen = pen_obj
+        self.galaxy = galaxy
+        self.pos_x, self.pos_y = self.galaxy.calculate_planet_position(planet_data)
 
 
     def move_pen_to(self, position):
@@ -58,16 +62,16 @@ class Planet:
     def draw_orbit(self):
         """ Draw the orbit of the planet on the screen. """
         if self.show_orbit and self.orbit_radius > 0:
-            self.pen.speed(15)  # Increase speed for drawing the planet's orbit
+            # Orbit drawing is stroke-heavy; reduce redraw frequency while drawing.
+            with self.galaxy.temporary_tracer(20):
+                #move to the center of the solar system to draw the orbit of the planet
+                self.move_pen_to((self.pos_x - self.orbit_radius, -self.orbit_radius))
 
-            #move to the center of the solar system to draw the orbit of the planet
-            self.move_pen_to((self.pos_x - self.orbit_radius, -self.orbit_radius))
+                self.pen.color(color_utils.darken_color(self.color, 0.4)) # Set the color of the orbit to a darker shade of the planet's color
+                self.pen.circle(self.orbit_radius)  # Draw the orbit of the planet
 
-            self.pen.color(color_utils.darken_color(self.color, 0.4)) # Set the color of the orbit to a darker shade of the planet's color
-            self.pen.circle(self.orbit_radius)  # Draw the orbit of the planet
-
-            self.move_pen_to((self.pos_x, self.pos_y)) # Move back to the planet's position
-            self.pen.speed(5) # Reset speed for drawing
+                self.move_pen_to((self.pos_x, self.pos_y)) # Move back to the planet's position
+                self.pen.speed(5) # Reset speed for drawing
 
     def draw_moons(self):
         """Draw small dots representing moons below the planet."""
@@ -88,12 +92,14 @@ class Planet:
         self.pen.shapesize(0.3, 0.3)  # Set the size of the turtle shape
         self.pen.color("#383838")  # Set the color for the moons
 
-        for i in range(self.moons):
-            row = i // max_display_row
-            col = i % max_display_row
+        # Stamping many moon markers benefits from lower redraw frequency.
+        with self.galaxy.temporary_tracer(20):
+            for i in range(self.moons):
+                row = i // max_display_row
+                col = i % max_display_row
 
-            x = start_x + col * 9
-            y = start_y - row * 9
+                x = start_x + col * 9
+                y = start_y - row * 9
 
-            self.move_pen_to((x, y))
-            self.pen.stamp()
+                self.move_pen_to((x, y))
+                self.pen.stamp()
