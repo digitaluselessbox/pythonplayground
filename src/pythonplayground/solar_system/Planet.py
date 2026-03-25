@@ -15,8 +15,8 @@ class Planet:
         self.orbit_radius = planet_data.get("x", 0)
 
         # Accept both hex ("#RRGGBB") and RGB strings ("(r, g, b)" / "r,g,b").
-        color_value = str(planet_data.get("color", "#FFFFFF"))
-        self.color:color_utils.RGBColor = color_utils.parse_color(color_value)
+        self.color_value = str(planet_data.get("color", "#FFFFFF"))
+        self.color:color_utils.RGBColor = color_utils.parse_color(self.color_value)
 
         self.show_orbit = planet_data.get("show_orbit", False)
         self.moons = planet_data.get("moons", 0)

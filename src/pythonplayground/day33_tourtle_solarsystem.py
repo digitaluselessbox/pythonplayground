@@ -6,13 +6,42 @@
 
 
 import json
+import time
 import turtle
 import solar_system
+
+
+def wait_for_start(screen, pen: turtle.Turtle) -> None:
+    """Wait for user input in the turtle window before drawing starts."""
+    started = False
+
+    def start(*_args):
+        nonlocal started
+        started = True
+
+    pen.color("white")
+    pen.teleport(0, 0)
+    pen.write("Bereit für eine Reise durch das Sonnensystem?", align="center", font=("Arial", 40, "normal"))
+
+    screen.listen()
+    screen.onkey(start, "Return")
+    screen.onkey(start, "KP_Enter")
+    screen.onclick(start)
+
+    while not started:
+        screen.update()
+        time.sleep(0.01)
+
+    screen.onkey(None, "Return")
+    screen.onkey(None, "KP_Enter")
+    screen.onclick(None)
+    pen.clear()
 
 
 creator = turtle.Turtle()
 
 galaxy = solar_system.Galaxy(creator, width=1920, height=1080)
+wait_for_start(galaxy.galaxy, creator)
 galaxy.draw_background_stars(num_stars=200) # Draw the galaxy background with stars
 
 planets = []
